@@ -21,13 +21,24 @@ const orderSchema = new mongoose.Schema({
         type:String,
         default:"Food Processing"
     },
+    orderId:{
+        type:String,
+    },
     date:{
         type:Date,
         default:Date.now()
     },
     payment:{
-        type:Boolean,
-        default:false
+        status: {
+            type: String,
+            enum: ["Pending", "Paid", "Failed"],
+            default: "Pending"
+        },
+        method: {
+            type: String,
+            enum: ["Online", "Cash on Delivery"],
+            default: "Cash on Delivery"
+        }
     }
 })
 

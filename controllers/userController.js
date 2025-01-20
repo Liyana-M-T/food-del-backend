@@ -6,7 +6,9 @@ import validator from "validator"
 
 // login user
 export const loginUser = async (req,res) => {
+
     const {email,password} = req.body;
+
     try{
       const user = await userModel.findOne({email})
 
@@ -70,3 +72,35 @@ export const registerUser = async (req,res) => {
    }
 }
 
+// fetch all users (admin)
+export const fetchUsers = async (req, res) => {
+  try {
+    const users = await userModel.find({}, { password: 0 }); // Exclude password for security
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: "No users found" });
+    }
+
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Error fetching users" });
+  }
+};
+
+// remove user (admin)
+export const removeUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const deletedUser = await userModel.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User removed successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Error removing user" });
+  }
+};
