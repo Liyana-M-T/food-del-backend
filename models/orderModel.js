@@ -5,9 +5,9 @@ const orderSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    items:{
-      type:Array,
-      required:true
+    items: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"item",
     },
     amount:{
         type:Number,
@@ -42,5 +42,5 @@ const orderSchema = new mongoose.Schema({
     }
 })
 
-const orderModel = mongoose.models.order || mongoose.model("order",orderSchema);
+const orderModel = mongoose.model("order",orderSchema);
 export default orderModel;

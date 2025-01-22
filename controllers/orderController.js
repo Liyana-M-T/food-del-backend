@@ -17,6 +17,8 @@ export const placeOrder = async (req, res) => {
 
   try {
     const { items, address, paymentMode, userId } = req.body;
+    console.log(items,"itemss");
+    
     console.log(userId, "user");
 
     // Validate payment mode
@@ -27,12 +29,9 @@ export const placeOrder = async (req, res) => {
   
   const datas = await Promise.all(
     Object.entries(items).map(async (item) => {
-      // console.log(item,'item');
       const food = await foodModel.findById(item[0]);
       
       if (food) {
-        // console.log(item, 'item');
-        
         amount = amount + (food?.price * item[1]);
       }
     })
@@ -107,8 +106,10 @@ export const verifyOrder = async (req, res) => {
 
 export const userOrders = async (req, res) => {
   try {
-    const orders = await orderModel.find({ userId: req.body.userId });
-    console.log("User ID from request:", req.body.userId);
+    console.log(req.body,"11");
+    
+    const orders = await orderModel.find().populate('items')
+    console.log("orders", orders);
 
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
@@ -122,6 +123,8 @@ export const userOrders = async (req, res) => {
 export const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({});
+    console.log(orders,"orders");
+    
     res.json({ success: true, data: orders });
   } catch (error) {
     console.log(error);

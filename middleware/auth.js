@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken"
+import { v4 as uuidv4 } from 'uuid';
 
 const authMiddleware = async (req,res,next) => {
  const {token} = req.headers;
@@ -7,7 +8,7 @@ const authMiddleware = async (req,res,next) => {
  }
  try{
     const token_decode = jwt.verify(token,process.env.JWT_SECRET);
-    req.body.userId = token_decode.id;
+    req.body.userId = token_decode.id ? token_decode.id : uuidv4();  ;
     next();
  }catch (error) {
    console.log(error);

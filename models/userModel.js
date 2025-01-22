@@ -14,11 +14,8 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    cartData:{
-        type:Object,
-        default:{}
-    }
+   
 },{minimize:false})
 
-const userModel = mongoose.models.user || mongoose.model("user" ,userSchema)
+const userModel = mongoose.model("user" ,userSchema)
 export default userModel;

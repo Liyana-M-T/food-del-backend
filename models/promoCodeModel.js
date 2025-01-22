@@ -21,5 +21,5 @@ const promoCodeSchema = new mongoose.Schema({
         },
   });
 
-  const promoCodeModel =  mongoose.models.promoCode || mongoose.model("promoCode",promoCodeSchema);
+  const promoCodeModel = mongoose.model("promoCode",promoCodeSchema);
   export default promoCodeModel;
