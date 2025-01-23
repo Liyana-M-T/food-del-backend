@@ -25,19 +25,13 @@ export const placeOrder = async (req, res) => {
     if (!["online", "cod"].includes(paymentMode)) {
       return res.json({ success: false, message: "Invalid payment mode" });
     }
-  let amount = 0;
-  
-  const datas = await Promise.all(
-    Object.entries(items).map(async (item) => {
-      const food = await foodModel.findById(item[0]);
-      
-      if (food) {
-        amount = amount + (food?.price * item[1]);
-      }
-    })
-  );
-  console.log(amount, "amount");
-
+    
+    let amount = 0;
+    items.forEach((item) => {
+      amount += item.price * item.quantity;
+    });
+    
+    console.log(amount, "amount");
 
     // After placing order, clear user's cart
     await userModel.findByIdAndUpdate(userId, { cartData: {} });
@@ -106,17 +100,29 @@ export const verifyOrder = async (req, res) => {
 
 export const userOrders = async (req, res) => {
   try {
+    // Assuming req.user contains the logged-in user's data after JWT verification
+    const {userId} = req.body; // The user ID should be in req.user if you're using authentication middleware
     console.log(req.body,"11");
     
-    const orders = await orderModel.find().populate('items')
-    console.log("orders", orders);
+    console.log("Logged-in User ID:", userId);
 
+    // Fetch only orders belonging to the logged-in user
+    const orders = await orderModel.find({ userId }); // Filter orders by the userId
+
+    console.log("User's Orders:", orders);
+
+    if (orders.length === 0) {
+      return res.status(404).json({ success: false, message: "No orders found for this user" });
+    }
+
+    // Respond with the orders of the logged-in user
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: "Error" });
+    res.status(500).json({ success: false, message: "Error fetching orders" });
   }
 };
+
 
 //Listing orders for admin panel
 

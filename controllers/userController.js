@@ -2,7 +2,18 @@ import userModel from "../models/userModel.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import validator from "validator"
+import dotenv from "dotenv"
 import nodemailer from "nodemailer";
+
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail", // Use your email service
+  auth: {
+    user: process.env.EMAIL_USER, // Your email address
+    pass: process.env.EMAIL_PASSWORD, // Your email password or app password
+  },
+});
 
 // login user
 export const loginUser = async (req,res) => {
@@ -23,6 +34,25 @@ export const loginUser = async (req,res) => {
       }
 
       const token = createToken(user._id);
+      
+      // Send an email on successful login
+      const mailOptions = {
+        from: process.env.EMAIL_USER, // Your email address
+        to: email, // Recipient email
+        subject: "Login Notification",
+        text: `Hello ${user.name}, 🍩\n\nYou’re all logged in! Time to treat yourself to something sweet—or savory. 🍕.\n\nHappy dining,\nTomato 🍅`,
+      };
+      
+    console.log(process.env.EMAIL_USER,process.env.EMAIL_PASSWORD);
+    
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error sending email:", err);
+      } else {
+        console.log("Email sent:", info.response);
+      }
+    });
+
       res.status(200).json({success:true,token})
     }catch (error) {
       console.log(error);

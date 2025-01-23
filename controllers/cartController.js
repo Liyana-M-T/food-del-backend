@@ -1,88 +1,63 @@
-import cartModel from "../models/cartModel.js"
+import userModel from "../models/userModel.js"
+
 
 //add items to user cart
-export const addToCart = async (req, res) => {
-  try {
-    const { userId, itemId, name, price, quantity } = req.body;
-
-    let cart = await cartModel.findOne({ userId });
-
-    if (!cart) {
-      // Create a new cart if none exists for the user
-      cart = new cartModel({
-        userId,
-        items: [{ itemId, name, price, quantity }],
-      });
-    } else {
-      // Check if the item already exists in the cart
-      const existingItem = cart.items.find(item => item.itemId.toString() === itemId);
-
-      if (existingItem) {
-        // Update the quantity if the item exists
-        existingItem.quantity += quantity;
-      } else {
-        // Add the new item to the cart
-        cart.items.push({ itemId, name, price, quantity });
-      }
+export const addToCart = async (req,res) => {
+  try{
+    let userData = await userModel.findOne({_id:req.body.userId});
+    let cartData = await userData.cartData;
+    if(!cartData[req.body.itemId])
+    {
+    cartData[req.body.itemId] = 1
     }
-
-    await cart.save();
-    res.status(200).json({ success: true, message: "Item added to cart", cart });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Error adding to cart" });
+    else{
+        cartData[req.body.itemId] += 1;
+    }
+    await userModel.findByIdAndUpdate(req.body.userId,{cartData});
+    res.status(200).json({success:true,message:"Added to Cart"})
+}catch (error) {
+   console.log(error);
+   res.status(500).json({success:false,message:"Error"})
   }
-};
+}
+
 
 
 //remove items from user cart
-export const removeFromCart = async (req, res) => {
-  try {
-    const { userId, itemId } = req.body;
-
-    const cart = await cartModel.findOne({ userId });
-
-    if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
-    }
-
-    const itemIndex = cart.items.findIndex(item => item.itemId.toString() === itemId);
-
-    if (itemIndex !== -1) {
-      if (cart.items[itemIndex].quantity > 1) {
-        // Decrement the quantity if more than 1
-        cart.items[itemIndex].quantity -= 1;
-      } else {
-        // Remove the item from the cart if quantity is 1
-        cart.items.splice(itemIndex, 1);
-      }
-
-      await cart.save();
-      res.status(200).json({ success: true, message: "Item removed from cart", cart });
-    } else {
-      res.status(404).json({ success: false, message: "Item not found in cart" });
-    }
+export const removeFromCart = async (req,res) => {
+  try{
+    let userData = await userModel.findById(req.body.userId)
+    
+    let cartData = await userData.cartData;
+    console.log(cartData,"cartData");
+    
+    if(cartData[req.body.itemId]>0) {
+      cartData[req.body.itemId] -= 1;
+ }
+ console.log(Object.keys(cartData),"key");
+ 
+ 
+ 
+ await userModel.findByIdAndUpdate(req.body.userId,{cartData});
+ res.status(200).json({success:true,message:"Removed From Cart"})
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Error removing from cart" });
+    console.log(error);
+    res.status(500).json({success:false,message:"Error"})
+
   }
-};
 
-
+}
 //fetch user cart data
-export const getCart = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const cart = await cartModel.findOne({ userId });
-
-    if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
-    }
-
-    res.status(200).json({ success: true, cart });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Error fetching cart data" });
+export const getCart = async (req,res) => {
+  try{
+    let userData = await userModel.findById(req.body.userId);
+    let cartData = await userData.cartData;
+    res.status(200).json({success:true,cartData})
   }
-};
+  catch(error) {
+   console.log(error);
+   res.status(500).json({success:false,message:"Error"})
+  }
+
+}
+
