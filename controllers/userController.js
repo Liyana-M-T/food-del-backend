@@ -2,19 +2,7 @@ import userModel from "../models/userModel.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import validator from "validator"
-import dotenv from "dotenv"
-import nodemailer from "nodemailer";
-
-dotenv.config();
-
-const transporter = nodemailer.createTransport({
-  service: "Gmail", // Use your email service
-  auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASSWORD, // Your email password or app password
-  },
-});
-
+import emailService from "../services/emailService.js"
 // login user
 export const loginUser = async (req,res) => {
 
@@ -22,37 +10,15 @@ export const loginUser = async (req,res) => {
 
     try{
       const user = await userModel.findOne({email})
-
       if(!user){
         return res.status(404).json({success:false,message:"User Doesn't exist"})
       }
-
       const isMatch = await bcrypt.compare(password,user.password)
-
       if (!isMatch) {
         return res.status(401).json({success:false,message:"Inavlid credentials"})
       }
-
       const token = createToken(user._id);
-      
-      // Send an email on successful login
-      const mailOptions = {
-        from: process.env.EMAIL_USER, // Your email address
-        to: email, // Recipient email
-        subject: "Login Notification",
-        text: `Hello ${user.name}, 🍩\n\nYou’re all logged in! Time to treat yourself to something sweet—or savory. 🍕.\n\nHappy dining,\nTomato 🍅`,
-      };
-      
-    console.log(process.env.EMAIL_USER,process.env.EMAIL_PASSWORD);
-    
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error("Error sending email:", err);
-      } else {
-        console.log("Email sent:", info.response);
-      }
-    });
-
+      emailService.sendLoginEmail(user.name, email);
       res.status(200).json({success:true,token})
     }catch (error) {
       console.log(error);
@@ -114,6 +80,44 @@ export const fetchUsers = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Error fetching users" });
+  }
+};
+
+// Update user (admin)
+export const updateUser = async (req, res) => {
+  const { userId } = req.params;
+  console.log(req.params,"44");
+  
+  const { name, password } = req.body; 
+
+  try {
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Update name if provided
+    if (name) {
+      user.name = name;
+    }
+
+    // Update and hash password if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    // Save updated user only if there's an update
+    if (name || password) {
+      await user.save();
+      return res.status(200).json({ success: true, message: "User updated successfully" });
+    } else {
+      return res.status(400).json({ success: false, message: "No fields to update" });
+    }
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ success: false, message: "Error updating user" });
   }
 };
 

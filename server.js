@@ -7,7 +7,8 @@ import userRouter from "./routes/userRoute.js";
 import cartRouter from "./routes/cartRoute.js"
 import orderRouter from "./routes/orderRoute.js";
 import promocodeRouter from "./routes/promoCodeRoute.js";
-
+import adminRouter from "./routes/adminRoute.js";
+import bcrypt from "bcrypt"
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/user", userRouter)
 app.use("/api/cart",cartRouter)
 app.use("/api/order",orderRouter)
 app.use("/api/promocode",promocodeRouter)
+app.use("/api/admin",adminRouter)
 
 app.get("/", (req, res) => {
   res.send("API Working");
@@ -37,4 +39,6 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`server started on htttp:localhost:${port}`);
 });
-//
+const password = 'admin2';
+bcrypt.hash(password, 10).then((hash) => console.log(hash));
+

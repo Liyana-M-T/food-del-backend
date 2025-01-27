@@ -42,6 +42,44 @@ export const listFood = async (req, res) => {
     }
 };
 
+
+//update Food
+
+export let updateFood = async (req, res) => {
+  const { id, name, category, price } = req.body;
+  const image_filename = req.file ? `${req.file.filename}` : null; 
+  console.log(image_filename,"eee");
+  
+  try {
+    const food = await foodModel.findById(id); 
+    if (!food) {
+      return res.status(404).json({ success: false, message: "Food item not found" });
+    }
+
+    
+    if (name) food.name = name;
+    if (category) food.category = category;
+    if (price) food.price = price;
+    if (image_filename) food.image = image_filename; 
+
+    await food.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Food item updated successfully",
+      data: food,
+    });
+  } catch (error) {
+    console.error("Error updating food item:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating the food item",
+    });
+  }
+};
+
+
+
 // Remove food item
 export const removeFood = async (req, res) => {
     try {

@@ -8,7 +8,6 @@ import {
 
 const promocodeRouter = express.Router();
 
-// Admin Routes
 promocodeRouter.post('/create', createPromoCode);
 promocodeRouter.delete('/deactivate', deactivatePromoCode);
 promocodeRouter.get('/', fetchPromoCodes); 
