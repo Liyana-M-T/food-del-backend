@@ -1,4 +1,3 @@
-import { log } from "console";
 import foodModel from "../models/foodModel.js";
 import fs from 'fs'
 
@@ -48,7 +47,6 @@ export const listFood = async (req, res) => {
 export let updateFood = async (req, res) => {
   const { id, name, category, price } = req.body;
   const image_filename = req.file ? `${req.file.filename}` : null; 
-  console.log(image_filename,"eee");
   
   try {
     const food = await foodModel.findById(id); 
@@ -56,7 +54,6 @@ export let updateFood = async (req, res) => {
       return res.status(404).json({ success: false, message: "Food item not found" });
     }
 
-    
     if (name) food.name = name;
     if (category) food.category = category;
     if (price) food.price = price;
@@ -79,14 +76,9 @@ export let updateFood = async (req, res) => {
 };
 
 
-
 // Remove food item
 export const removeFood = async (req, res) => {
     try {
-        console.log(req.body, "Request body:");
-        console.log(req.body.id, "id:");
-
-        // Check if id is present
         if (!req.body.id) {
             return res.status(400).json({
                 success: false,
@@ -109,7 +101,6 @@ export const removeFood = async (req, res) => {
             }
         });
 
-        // Remove food item from the database
         await foodModel.findByIdAndDelete(req.body.id);
 
         res.status(200).json({

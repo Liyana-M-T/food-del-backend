@@ -6,7 +6,6 @@ export const AdminLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-
     const adminUser = await adminModel.findOne({ email });
     if (!adminUser) {
       return res.status(404).json({ success: false, message: "Admin doesn't exist" });

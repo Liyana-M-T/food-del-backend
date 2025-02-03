@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import validator from "validator"
 import emailService from "../services/emailService.js"
+
 // login user
 export const loginUser = async (req,res) => {
 
@@ -15,7 +16,7 @@ export const loginUser = async (req,res) => {
       }
       const isMatch = await bcrypt.compare(password,user.password)
       if (!isMatch) {
-        return res.status(401).json({success:false,message:"Inavlid credentials"})
+        return res.status(401).json({success:false,message:"Invalid credentials"})
       }
       const token = createToken(user._id);
       emailService.sendLoginEmail(user.name, email);
@@ -39,7 +40,6 @@ export const registerUser = async (req,res) => {
         return res.json({success:false,message:"User already registered"})
     }
 
-    //validating email format & strong password
     if(!validator.isEmail(email)) {
         return res.json({success:false, message:"Please enter a valid email"})
     }
@@ -48,7 +48,6 @@ export const registerUser = async (req,res) => {
       return res.json({success:false,message:"Please enter a strong password"})  
     }
 
-    //hashing user password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password,salt)
 
@@ -71,7 +70,7 @@ export const registerUser = async (req,res) => {
 // fetch all users (admin)
 export const fetchUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}, { password: 0 }); // Exclude password for security
+    const users = await userModel.find({}, { password: 0 }); 
     if (users.length === 0) {
       return res.status(404).json({ success: false, message: "No users found" });
     }
@@ -97,12 +96,10 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Update name if provided
     if (name) {
       user.name = name;
     }
 
-    // Update and hash password if provided
     if (password) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);

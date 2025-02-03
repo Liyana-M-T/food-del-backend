@@ -3,17 +3,19 @@ import userModel from "../models/userModel.js"
 
 //add items to user cart
 export const addToCart = async (req,res) => {
+   const { userId, itemId } = req.body;
+
   try{
-    let userData = await userModel.findOne({_id:req.body.userId});
+    let userData = await userModel.findOne({_id:userId});
     let cartData = await userData.cartData;
-    if(!cartData[req.body.itemId])
+    if(!cartData[itemId])
     {
-    cartData[req.body.itemId] = 1
+       cartData[itemId] = 1
     }
     else{
-        cartData[req.body.itemId] += 1;
+        cartData[itemId] += 1;
     }
-    await userModel.findByIdAndUpdate(req.body.userId,{cartData});
+    await userModel.findByIdAndUpdate(userId,{cartData});
     res.status(200).json({success:true,message:"Added to Cart"})
 }catch (error) {
    console.log(error);
@@ -21,36 +23,30 @@ export const addToCart = async (req,res) => {
   }
 }
 
-
-
 //remove items from user cart
 export const removeFromCart = async (req,res) => {
+  const { userId, itemId } = req.body;
+
   try{
-    let userData = await userModel.findById(req.body.userId)
-    
+    let userData = await userModel.findById(userId)
     let cartData = await userData.cartData;
-    console.log(cartData,"cartData");
-    
-    if(cartData[req.body.itemId]>0) {
-      cartData[req.body.itemId] -= 1;
- }
- console.log(Object.keys(cartData),"key");
- 
- 
- 
- await userModel.findByIdAndUpdate(req.body.userId,{cartData});
- res.status(200).json({success:true,message:"Removed From Cart"})
+    if(cartData[itemId]>0) {
+      cartData[itemId] -= 1;
+    }
+    await userModel.findByIdAndUpdate(userId,{cartData});
+    res.status(200).json({success:true,message:"Removed From Cart"})
   } catch (error) {
     console.log(error);
     res.status(500).json({success:false,message:"Error"})
-
   }
-
 }
+
 //fetch user cart data
 export const getCart = async (req,res) => {
+  const { userId } = req.body;
+
   try{
-    let userData = await userModel.findById(req.body.userId);
+    let userData = await userModel.findById(userId);
     let cartData = await userData.cartData;
     res.status(200).json({success:true,cartData})
   }
@@ -58,6 +54,5 @@ export const getCart = async (req,res) => {
    console.log(error);
    res.status(500).json({success:false,message:"Error"})
   }
-
 }
 

@@ -2,7 +2,6 @@ import Razorpay from "razorpay";
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
-import foodModel from "../models/foodModel.js";
 
 dotenv.config();
 
@@ -16,38 +15,25 @@ export const placeOrder = async (req, res) => {
   const frontend_url = "http://localhost:5173";
 
   try {
-    const { items, address, paymentMode, userId } = req.body;
-    console.log(items,"itemss");
-    
-    console.log(userId, "user");
+    const { items, address, paymentMode, userId, amount } = req.body;
 
-    // Validate payment mode
     if (!["online", "cod"].includes(paymentMode)) {
       return res.json({ success: false, message: "Invalid payment mode" });
     }
-    
-    let amount = 0;
-    items.forEach((item) => {
-      amount += item.price * item.quantity;
-    });
-    
-    console.log(amount, "amount");
 
-    // After placing order, clear user's cart
     await userModel.findByIdAndUpdate(userId, { cartData: {} });
     const newOrder = new orderModel({
       userId,
       items,
       amount,
       address,
-      payment: paymentMode === "online" ? false : true, // Set payment status for COD
+      payment: paymentMode === "online" ? false : true,
     });
     if (paymentMode === "online") {
-      // Prepare Razorpay order for online payment
-      const options = {
-        amount: amount *100, // Razorpay accepts amount in paise
+       const options = {
+        amount: amount , 
         currency: "INR",
-        receipt: `${newOrder._id}`, // Unique receipt ID
+        receipt: `${newOrder._id}`, 
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
@@ -62,7 +48,6 @@ export const placeOrder = async (req, res) => {
         cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
       });
     } else if (paymentMode === "cod") {
-      // For cash on delivery, respond with success
       await newOrder.save();
       return res.json({
         success: true,
@@ -100,22 +85,15 @@ export const verifyOrder = async (req, res) => {
 
 export const userOrders = async (req, res) => {
   try {
-    // Assuming req.user contains the logged-in user's data after JWT verification
-    const {userId} = req.body; // The user ID should be in req.user if you're using authentication middleware
-    console.log(req.body,"11");
-    
-    console.log("Logged-in User ID:", userId);
+   
+    const {userId} = req.body;
 
-    // Fetch only orders belonging to the logged-in user
-    const orders = await orderModel.find({ userId }); // Filter orders by the userId
-
-    console.log("User's Orders:", orders);
+    const orders = await orderModel.find({ userId }); 
 
     if (orders.length === 0) {
       return res.status(404).json({ success: false, message: "No orders found for this user" });
     }
 
-    // Respond with the orders of the logged-in user
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
